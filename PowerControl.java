@@ -5,34 +5,34 @@ public class PowerControl {
 	private Vector<Apps> apps;
 	private int wattLevel;
 	private int appNum;
-	 
+
 	private Vector<Integer> locationList; //all locations
-	private Vector<Integer> smartWattList ; // watts of apps in a grid 
+	private Vector<Integer> smartWattList ; // watts of apps in a grid
 	private Vector<Integer> regularWattList ;
-	
+
 	private Vector<Integer> changedLocation; // affected locations
-	private Vector<Smart> changedSmart; 
-	private Vector<Regular> changedRegular; 
+	private Vector<Smart> changedSmart;
+	private Vector<Regular> changedRegular;
 	private Vector<Smart> smartOff;
 	private int smartChange=0,regularChange=0,smartO=0; //# of changed apps in a grid
-	
+
 	private static Vector<String> appReport;
 	private float appCondition; //determines if an app is on/off
-	
-	public PowerControl(Vector a, int w, int n){
+
+	public PowerControl(Vector<Apps> a, int w, int n){
 		setApps(a);
 		setWattLevel(w);
 		setAppNum(n);
 		setLists();
 		setWattLists();
-		
+
 		setLocationList();
 		sortApps();
 		appCondition = (float)(Math.random());
-		
+
 	}
-	
-	public void setApps(Vector<Apps> a) { 
+
+	public void setApps(Vector<Apps> a) {
 		apps = new Vector<Apps>();
 		for(int i = 0; i < a.size(); i++) {
 				apps.add(a.elementAt(i));
@@ -44,7 +44,7 @@ public class PowerControl {
 	public void setWattLevel(int w) {
 		this.wattLevel = w;
 	}
-	public void setLists() { 
+	public void setLists() {
 		changedSmart = new Vector<Smart>();
 		changedRegular = new Vector<Regular>();
 		changedLocation = new Vector<Integer>();
@@ -52,7 +52,7 @@ public class PowerControl {
 		locationList = new Vector<Integer>();
 		appReport = new Vector<String>();
 	}
-	public void setWattLists(){   
+	public void setWattLists(){
 		smartWattList = new Vector<Integer>();
 		regularWattList = new Vector<Integer>();
 	}
@@ -62,7 +62,7 @@ public class PowerControl {
 		}
 		HashSet<Integer> unique = new HashSet<Integer>(locationList); //removes duplicate locations
 		locationList = new Vector<Integer>(unique);
-		
+
 		for(int i =0; i < locationList.size(); i++) {   //sort location nums
 			for(int j=i+1; j < locationList.size();j++){
 				if(locationList.elementAt(i) > locationList.elementAt(j)){
@@ -72,64 +72,64 @@ public class PowerControl {
 				}
 			}
 		}
-		
+
 	}
-	
-	public Vector<String> getAppReport() { return this.appReport; } 
-	public Vector<Apps> getApps() { return this.apps;}
-	
-	public String control() { //MAIN METHOD FOR POWER CONTROL CLASS 
+
+	public Vector<String> getAppReport() { return appReport; }
+	public Vector<Apps> getApps() { return apps;}
+
+	public String control() { //MAIN METHOD FOR POWER CONTROL CLASS
 		int index =0,loc=0;
 		int tBegin =0,tFinal=0;
-		
+
 		for(int i = 0; i < locationList.size(); i++) {
 			setWattLists();
 			loc = locationList.elementAt(i);
-			int total =0; 
+			int total =0;
 			boolean flag = true;
-			
+
 			for(int j =index; j < apps.size()&&flag;j++){
-				
+
 				if( loc == apps.elementAt(j).getLocation()){
-					if(apps.elementAt(j).getType().equals("SMART")) 
+					if(apps.elementAt(j).getType().equals("SMART"))
 						smartWattList.add(this.findWatt(j));
 					else
 						regularWattList.add(this.findWatt(j));
 				}
-				
+
 				else{
 					total = this.calculateSum();
 					tBegin = total;
-					
-					index =j; 
+
+					index =j;
 					flag = false;
-					
-					if(total > wattLevel) {          //Smart Low 
+
+					if(total > wattLevel) {          //Smart Low
 						total = applyLow(total,loc);
 					} else {this.smartChange=0;}
-					
+
 					if(total > wattLevel) {
 						total = applyBrownOutR(total,loc);  //Regular Off
 					}else { this.regularChange=0;}
-					
+
 					if(total > wattLevel) {
 						total = applyBrownOutS(total,loc);  //Smart OfF
 					}else {this.smartO=0;}
 					tFinal = total;
-					
-					appReport.add(allAppReport(loc,tBegin,tFinal));	
-				}	
+
+					appReport.add(allAppReport(loc,tBegin,tFinal));
+				}
 			}
 		}
 		appReport.add(allAppReport(loc,tBegin,tFinal));
-		
+
 		return screenReport();
 	}
 	public int applyLow(int total, int loc) {
 		this.smartChange=0;
 		boolean flag = true;
 		Vector<Smart> smart = sortGridSmart(loc);
-		
+
 		for(int i =0 ; i < smart.size() && flag;i++) {
 			if(total > wattLevel) {
 				if(smartWattList.elementAt(i) != 0) {
@@ -151,7 +151,7 @@ public class PowerControl {
 		boolean flag = true;
 		this.regularChange=0;
 		Vector<Regular> regular = sortGridRegular(loc);
-		
+
 		for(int i =0 ; i < regular.size() && flag;i++) {
 			if(total > wattLevel) {
 				if(regularWattList.elementAt(i) != 0) {
@@ -172,7 +172,7 @@ public class PowerControl {
 		boolean flag = true;
 		this.smartO=0;
 		Vector<Smart> smart = sortGridSmart(loc);
-		
+
 		for(int i =0 ; i < smart.size() && flag;i++) {
 			if(total > wattLevel) {
 				if(smartWattList.elementAt(i) != 0) {
@@ -188,11 +188,11 @@ public class PowerControl {
 		}
 		return total;
 	}
-	
+
 	public void sortApps() { //sorts apps based on location, type
-		
+
 		Vector<Apps> sortedApps = new Vector<Apps>();
-		
+
 		for(int i =0; i < locationList.size();i++) { // sort based on location num
 			int loc = locationList.elementAt(i);
 			for(int j =0; j < apps.size(); j++) {
@@ -205,10 +205,10 @@ public class PowerControl {
 			int loc = locationList.elementAt(i);
 			boolean flag1 = true, flag2 = true;
 			int start = 0, end =0;
-			
+
 			for(int j =0; j < sortedApps.size() &&flag1;j++) {
 				if(loc == sortedApps.elementAt(j).getLocation()){
-					start = j; 
+					start = j;
 					flag1 = false;
 				}
 			}
@@ -216,9 +216,9 @@ public class PowerControl {
 				if(loc != sortedApps.elementAt(j).getLocation()){
 					end = j;
 					flag2 =false;
-				}	
+				}
 			}
-			
+
 			for(int j =start; j < end;j++) {
 				for(int k =start; k<end;k++) {
 					if(sortedApps.elementAt(k).getType().equals("SMART")) {
@@ -226,12 +226,12 @@ public class PowerControl {
 						sortedApps.remove(k);
 						sortedApps.add(start,temp);
 					}
-				}	
+				}
 			}
 		}
-		
+
 		this.apps = sortedApps;
-		
+
 	}
 	public Vector<Integer> sortChangedLocation() { // sorts affected location list
 		HashSet<Integer> unique = new HashSet<Integer>(changedLocation); //removes duplicate locations
@@ -253,7 +253,7 @@ public class PowerControl {
 			if(apps.elementAt(i).getLocation() == loc &&  apps.elementAt(i).getType().equals("SMART"))
 				smart.add((Smart)apps.elementAt(i));
 		}
-		
+
 		for(int i =0; i < smart.size();i++) {
 			for(int j =0; j < smart.size() - 1;j++) {
 				if(smart.elementAt(j).getOnW() < smart.elementAt(j+1).getOnW()){
@@ -271,22 +271,22 @@ public class PowerControl {
 			if(apps.elementAt(i).getLocation() == loc &&  apps.elementAt(i).getType().equals("REGULAR"))
 				regular.add((Regular)apps.elementAt(i));
 		}
-		
+
 		for(int i =0; i < regular.size();i++) {
 			for(int j =0; j < regular.size() - 1;j++) {
 				if(regular.elementAt(j).getOnW() < regular.elementAt(j+1).getOnW()){
 					Regular temp = regular.elementAt(j+1);
 					regular.set(j+1, regular.elementAt(j));
 					regular.set(j,temp);
-				} 
+				}
 			}
 		}
 		return regular;
 	}
-	
-	public int findWatt(int i) { //determines if an app is on/off  
+
+	public int findWatt(int i) { //determines if an app is on/off
 		int watt =0; //off
-		if(apps.elementAt(i).getProbOn() >= appCondition) 
+		if(apps.elementAt(i).getProbOn() >= appCondition)
 			watt = apps.elementAt(i).getOnW(); //on
 		return watt;
 	}
@@ -300,18 +300,18 @@ public class PowerControl {
 		}
 		return sum;
 	}
-	
+
 	public String screenReport() { //screen report
-		
-	
+
+
 		Vector<Integer> afftectedLocations = sortChangedLocation();
-		
+
 		String output="\nAffected locations:";
 		for(int i =0;i < afftectedLocations.size();i++) {
 			output+= "\n" + afftectedLocations.elementAt(i);
-			int countS =0, countR=0,countBS=0; 
-			
-			for(int j =0;j < changedSmart.size();j++) { 
+			int countS =0, countR=0,countBS=0;
+
+			for(int j =0;j < changedSmart.size();j++) {
 				if( changedSmart.elementAt(j).getLocation() == afftectedLocations.elementAt(i))
 					countS++;
 			}
@@ -323,13 +323,13 @@ public class PowerControl {
 				if( smartOff.elementAt(j).getLocation() == afftectedLocations.elementAt(i))
 					countBS++;
 			}
-			
-			
+
+
 			output+=" Turn low " + (countS-countBS) + " smart. Turn off " + countR +  " regular."+ "TurnOff: " + countBS + " smart.";
 		}
 		return output;
 	}
-	public String allAppReport(int loc,int tBegin, int tFinal) { //all appliances report 
+	public String allAppReport(int loc,int tBegin, int tFinal) { //all appliances report
 		String report = " ";
 		int smartNum=0, regularNum=0;
 		for(int i =0; i < apps.size();i++) {
@@ -340,13 +340,13 @@ public class PowerControl {
 					regularNum++;
 			}
 		}
-		
+
 		report+= "\n" + loc;
 		report+=" #Smart: " + smartNum + " #Regular: " + regularNum;
 		report+= " Initial Watt: " + tBegin;
 		report+= " Turn Low#: " + (smartChange-smartO) +" Brown out R#: " +regularChange + " Brown out S#: " + smartO;
 		report += " Final Watt: " + tFinal;
-		
+
 		return report;
 	}
 	public Vector<String> detailReport() { // file report
@@ -360,7 +360,7 @@ public class PowerControl {
 					flag = false;
 			}
 			if(flag) {report.add("\n" + changedSmart.elementAt(i).toString());}
-			
+
 		}
 		report.add("\nTurn to Off: \n"+ (changedRegular.size()+smartOff.size()) + " appliances.\n");
 		for(int i =0 ; i < changedRegular.size(); i++) {
@@ -369,9 +369,8 @@ public class PowerControl {
 		for(int i =0 ; i < smartOff.size(); i++) {
 			report.add( "\n" + smartOff.elementAt(i).toString());
 		}
-		
+
 		return report ;
-		
+
 	}
-}	
-	
+}
